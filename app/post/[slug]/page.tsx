@@ -60,6 +60,18 @@ export default async function PostPage({
         )}
       </div>
 
+      {/* ── Hero image ────────────────────────────────────── */}
+      {post.image_url && (
+        <div className="mb-10 relative w-full overflow-hidden">
+          <img
+            src={post.image_url}
+            alt={post.title}
+            className="w-full object-cover border border-primary/10"
+            style={{ maxHeight: '400px' }}
+          />
+        </div>
+      )}
+
       {/* ── RAW_INPUT ─────────────────────────────────────── */}
       <Section label="RAW_INPUT">
         <div className="relative p-8 bg-white/5 border-l-2 border-primary corner-accent">
@@ -249,3 +261,4 @@ function RiskStat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
