@@ -1,6 +1,6 @@
 # IdeaTerminal
 # IDEATERMINAL
-JUST A TEST
+
 A terminal-inspired idea archive that automatically turns AI conversations into structured public posts.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
