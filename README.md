@@ -1,4 +1,4 @@
-# HIGHDEAS
+# IdeaTerminal
 
 A terminal-inspired idea archive that automatically turns AI conversations into structured public posts.
 
@@ -11,7 +11,7 @@ A terminal-inspired idea archive that automatically turns AI conversations into 
 
 ## What It Does
 
-Most ideas die in chat windows. Highdeas captures them.
+Most ideas die in chat windows. IdeaTerminal captures them.
 
 The flow: have a conversation about a business, product, or workflow idea in Claude or ChatGPT. Trigger a skill that summarizes and structures the conversation. That structured payload gets sent to a Make.com pipeline, which enriches the data, generates a hero image, and writes a finished post to Supabase. The frontend reads those posts and displays them in a dark terminal / hacker OS aesthetic.
 
@@ -98,8 +98,8 @@ Every idea is parsed into the following fields:
 ### Setup
 
 ```bash
-git clone https://github.com/dmipatriot/highdeas.git
-cd highdeas
+git clone https://github.com/dmipatriot/IdeaTerminal.git
+cd IdeaTerminal
 npm install
 ```
 
