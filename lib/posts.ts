@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-export type Verdict = 'GENIUS' | 'MAYBE' | 'COOKED';
+export type Verdict = 'GENIUS' | 'SOLID' | 'RISKY' | 'PASS';
 export type PostStatus = 'draft' | 'ready' | 'published' | 'review' | 'error';
 
 export interface Post {
@@ -19,10 +19,39 @@ export interface Post {
   core_idea: string | null;
   why_it_might_work: string | null;
   why_it_might_fail: string | null;
+  competitive_moat: string | null;
+  biggest_assumption: string | null;
   mvp: string | null;
+  first_action: string | null;
 
   verdict: Verdict;
   score: number;
+  kill_shot: string | null;
+
+  signal_score: number | null;
+  execution_score: number | null;
+  risk_score: number | null;
+
+  market_pull: number | null;
+  market_pull_reason: string | null;
+  timing: number | null;
+  timing_reason: string | null;
+  differentiation: number | null;
+  differentiation_reason: string | null;
+  feasibility: number | null;
+  feasibility_reason: string | null;
+  monetization: number | null;
+  monetization_reason: string | null;
+  distribution: number | null;
+  distribution_reason: string | null;
+  founder_fit: number | null;
+  founder_fit_reason: string | null;
+  defensibility: number | null;
+  defensibility_reason: string | null;
+  assumption_density: number | null;
+  assumption_density_reason: string | null;
+
+  tech_stack: string[] | null;
 
   tags: string[];
   tone: string | null;

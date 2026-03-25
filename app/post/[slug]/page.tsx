@@ -2,6 +2,49 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPostBySlug, Post, Verdict } from '@/lib/posts';
 
+/* ── Verdict config ──────────────────────────────────────── */
+const VERDICT_CONFIG: Record<
+  Verdict,
+  { label: string; color: string; bg: string; border: string }
+> = {
+  GENIUS: {
+    label: 'GENIUS',
+    color: 'text-[#00FF9C]',
+    bg: 'bg-[#00FF9C]/10',
+    border: 'border-[#00FF9C]',
+  },
+  SOLID: {
+    label: 'SOLID',
+    color: 'text-[#60a5fa]',
+    bg: 'bg-[#60a5fa]/10',
+    border: 'border-[#60a5fa]',
+  },
+  RISKY: {
+    label: 'RISKY',
+    color: 'text-[#facc15]',
+    bg: 'bg-[#facc15]/10',
+    border: 'border-[#facc15]',
+  },
+  PASS: {
+    label: 'PASS',
+    color: 'text-[#ff716c]',
+    bg: 'bg-[#ff716c]/10',
+    border: 'border-[#ff716c]',
+  },
+};
+
+const DIMENSIONS = [
+  { key: 'market_pull', label: 'MARKET_PULL' },
+  { key: 'timing', label: 'TIMING' },
+  { key: 'differentiation', label: 'DIFFERENTIATION' },
+  { key: 'feasibility', label: 'FEASIBILITY' },
+  { key: 'monetization', label: 'MONETIZATION' },
+  { key: 'distribution', label: 'DISTRIBUTION' },
+  { key: 'founder_fit', label: 'FOUNDER_FIT' },
+  { key: 'defensibility', label: 'DEFENSIBILITY' },
+  { key: 'assumption_density', label: 'ASSUMPTION_DENSITY' },
+] as const;
+
 export default async function PostPage({
   params,
 }: {
@@ -18,6 +61,12 @@ export default async function PostPage({
     ? JSON.parse(post.tags)
     : [];
 
+  const techStack: string[] = Array.isArray(post.tech_stack)
+    ? post.tech_stack
+    : [];
+
+  const verdict = VERDICT_CONFIG[post.verdict] ?? VERDICT_CONFIG.PASS;
+
   return (
     <div className="min-h-screen bg-background px-4 md:px-8 py-10 max-w-4xl mx-auto">
       {/* Back link */}
@@ -30,22 +79,16 @@ export default async function PostPage({
 
       {/* ── Entity header ─────────────────────────────────── */}
       <div className="mb-10">
-        {/* Metadata row */}
         <div className="flex items-center gap-3 mb-4 text-[11px] uppercase tracking-widest">
           <span className="text-primary font-bold">ID: {slug}</span>
           <span className="text-on-surface-variant/40">|</span>
           <span className="text-on-surface-variant">STATUS: ANALYZING</span>
         </div>
 
-        {/* Title */}
-        <h1
-          className="text-4xl font-black text-primary tracking-tighter leading-none uppercase mb-6"
-          style={{ textShadow: '0 0 10px rgba(0,255,156,0.3)' }}
-        >
+        <h1 className="text-4xl font-black text-primary tracking-tighter leading-none uppercase mb-6 crt-glow">
           {post.title.toUpperCase()}
         </h1>
 
-        {/* Tags */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {tags.map((tag: string) => (
@@ -94,90 +137,172 @@ export default async function PostPage({
       </Section>
 
       {/* ── AI_ANALYSIS_ENGINE_V4 ─────────────────────────── */}
-      <Section
-        label="AI_ANALYSIS_ENGINE_V4"
-        right={
-          <span className="text-[11px] text-on-surface-variant uppercase tracking-widest">
-            CORE_STRENGTH:{' '}
-            <span className="text-primary font-bold">{post.score}/10</span>
-          </span>
-        }
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          {/* Market Fit */}
-          <BentoCard label="MARKET_FIT">
-            <div className="text-2xl font-black crt-glow text-primary mb-2">
-              {post.score >= 7 ? 'HIGH' : post.score >= 4 ? 'MEDIUM' : 'LOW'}
+      <Section label="AI_ANALYSIS_ENGINE_V4">
+        {/* 1. Composite score + verdict badge */}
+        <div className="flex items-center gap-6 mb-6 p-6 bg-surface-container border border-white/5">
+          <div className="flex-shrink-0">
+            <div className={`text-7xl font-black crt-glow ${verdict.color}`}>
+              {Math.round(post.score)}
             </div>
-            <p className="text-[11px] text-on-surface-variant leading-relaxed">
-              {post.core_idea ?? 'ANALYSIS PENDING...'}
-            </p>
-          </BentoCard>
-
-          {/* Scalability */}
-          <BentoCard label="SCALABILITY">
-            <div className="text-2xl font-black crt-glow text-primary mb-2">
-              {post.score}
-              <span className="text-base font-light text-on-surface-variant">/10</span>
+            <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">
+              COMPOSITE_SCORE / 100
             </div>
-            <p className="text-[11px] text-on-surface-variant leading-relaxed">
-              {post.clean_summary ?? 'PROCESSING...'}
-            </p>
-          </BentoCard>
-        </div>
-
-        {/* Competitive Moat — full width */}
-        <div className="bg-surface-container border border-white/5 border-l-4 border-l-primary p-6">
-          <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mb-3">
-            COMPETITIVE_MOAT
           </div>
-          <p className="text-sm text-on-surface leading-relaxed">
-            {post.why_it_might_work ?? 'NO DATA.'}
-          </p>
+          <div className="flex-shrink-0">
+            <div
+              className={`px-4 py-2 border text-sm font-black uppercase tracking-widest ${verdict.color} ${verdict.bg} ${verdict.border}`}
+            >
+              [ {verdict.label} ]
+            </div>
+          </div>
         </div>
+
+        {/* 2. Category bars */}
+        {(post.signal_score != null ||
+          post.execution_score != null ||
+          post.risk_score != null) && (
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <CategoryBar label="SIGNAL" value={post.signal_score} color="#00FF9C" />
+            <CategoryBar
+              label="EXECUTION"
+              value={post.execution_score}
+              color="#60a5fa"
+            />
+            <CategoryBar label="RISK" value={post.risk_score} color="#ff716c" />
+          </div>
+        )}
+
+        {/* 3. 3x3 dimension grid */}
+        {DIMENSIONS.some(
+          (d) => post[d.key as keyof Post] != null
+        ) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            {DIMENSIONS.map(({ key, label }) => {
+              const val = post[key as keyof Post] as number | null;
+              const reason = post[
+                (`${key}_reason`) as keyof Post
+              ] as string | null;
+              if (val == null) return null;
+              return (
+                <DimensionTile
+                  key={key}
+                  label={label}
+                  score={val}
+                  reason={reason}
+                />
+              );
+            })}
+          </div>
+        )}
       </Section>
 
-      {/* ── RISK_REPORT ───────────────────────────────────── */}
-      <Section label="RISK_REPORT">
-        <div className="p-6 bg-white/[0.02] border border-white/10">
-          {/* Visual bar */}
-          <div className="h-2 bg-white/5 flex overflow-hidden mb-6">
-            <div
-              className="bg-primary-container/70 h-full transition-all"
-              style={{ width: `${Math.min(post.score * 10, 70)}%` }}
-            />
-            <div
-              className="bg-error/60 h-full transition-all"
-              style={{
-                width: `${Math.max(10, 40 - post.score * 3)}%`,
-              }}
-            />
-            <div className="bg-white/10 h-full flex-1" />
+      {/* ── KILL_SHOT ─────────────────────────────────────── */}
+      {post.kill_shot && (
+        <Section label="KILL_SHOT">
+          <div className="p-6 bg-[#ff716c]/5 border-l-4 border-[#ff716c] border border-[#ff716c]/20">
+            <p className="text-sm text-[#ff716c] leading-relaxed font-bold uppercase tracking-wide">
+              {post.kill_shot}
+            </p>
           </div>
+        </Section>
+      )}
 
-          {/* Three columns */}
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <RiskStat
-              label="FEASIBILITY"
-              value={`${Math.round(post.score * 10)}%`}
-            />
-            <RiskStat
-              label="REGULATORY"
-              value={
-                (post.why_it_might_fail?.length ?? 0) > 200
-                  ? 'CRIT'
-                  : (post.why_it_might_fail?.length ?? 0) > 80
-                  ? 'MED'
-                  : 'LOW'
-              }
-            />
-            <RiskStat
-              label="ADOPTION"
-              value={post.score >= 6 ? 'VIABLE' : post.score >= 3 ? 'UNCERTAIN' : 'RISKY'}
-            />
+      {/* ── WHY IT MIGHT WORK / FAIL ──────────────────────── */}
+      {(post.why_it_might_work || post.why_it_might_fail) && (
+        <Section label="VECTOR_ANALYSIS">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {post.why_it_might_work && (
+              <div className="p-6 bg-surface-container border border-white/5 border-l-4 border-l-[#00FF9C]">
+                <div className="text-[10px] text-[#00FF9C] uppercase tracking-widest mb-3 font-bold">
+                  [+] WHY_IT_MIGHT_WORK
+                </div>
+                <p className="text-sm text-on-surface leading-relaxed">
+                  {post.why_it_might_work}
+                </p>
+              </div>
+            )}
+            {post.why_it_might_fail && (
+              <div className="p-6 bg-surface-container border border-white/5 border-l-4 border-l-[#ff716c]">
+                <div className="text-[10px] text-[#ff716c] uppercase tracking-widest mb-3 font-bold">
+                  [-] WHY_IT_MIGHT_FAIL
+                </div>
+                <p className="text-sm text-on-surface leading-relaxed">
+                  {post.why_it_might_fail}
+                </p>
+              </div>
+            )}
           </div>
-        </div>
-      </Section>
+        </Section>
+      )}
+
+      {/* ── BIGGEST_ASSUMPTION ────────────────────────────── */}
+      {post.biggest_assumption && (
+        <Section label="BIGGEST_ASSUMPTION">
+          <div className="p-6 bg-[#facc15]/5 border border-[#facc15]/20 border-l-4 border-l-[#facc15]">
+            <p className="text-sm text-on-surface leading-relaxed">
+              {post.biggest_assumption}
+            </p>
+          </div>
+        </Section>
+      )}
+
+      {/* ── COMPETITIVE_MOAT ──────────────────────────────── */}
+      {post.competitive_moat && (
+        <Section label="COMPETITIVE_MOAT">
+          <div className="p-6 bg-surface-container border border-white/5 border-l-4 border-l-primary">
+            <p className="text-sm text-on-surface leading-relaxed">
+              {post.competitive_moat}
+            </p>
+          </div>
+        </Section>
+      )}
+
+      {/* ── MVP_PATH ──────────────────────────────────────── */}
+      {(post.mvp || post.first_action) && (
+        <Section label="MVP_PATH">
+          <div className="p-6 bg-surface-container border border-white/5">
+            {post.mvp && (
+              <p className="text-sm text-on-surface leading-relaxed mb-4">
+                {post.mvp}
+              </p>
+            )}
+            {post.first_action && (
+              <div className="border-t border-white/5 pt-4 mt-2">
+                <div className="text-[10px] text-primary uppercase tracking-widest mb-2 font-bold">
+                  &gt; FIRST_ACTION
+                </div>
+                <p className="text-sm text-primary font-bold leading-relaxed crt-glow">
+                  {post.first_action}
+                </p>
+              </div>
+            )}
+          </div>
+        </Section>
+      )}
+
+      {/* ── TECH_STACK ────────────────────────────────────── */}
+      {techStack.length > 0 && (
+        <Section label="TECH_STACK">
+          <div className="flex flex-wrap gap-4">
+            {techStack.map((slug) => (
+              <div key={slug} className="flex flex-col items-center gap-2">
+                <div className="w-10 h-10 bg-surface-container border border-white/10 flex items-center justify-center p-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`https://cdn.simpleicons.org/${slug}`}
+                    alt={slug}
+                    className="w-6 h-6 object-contain"
+                    style={{ filter: 'brightness(0) invert(1) opacity(0.7)' }}
+                  />
+                </div>
+                <span className="text-[9px] text-on-surface-variant uppercase tracking-widest">
+                  {slug}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* ── Terminal log decoration ───────────────────────── */}
       <div className="mb-10 bg-black border border-white/10 p-4 font-mono text-[10px] text-primary/40 h-24 overflow-hidden animate-pulse">
@@ -234,31 +359,65 @@ function Section({
   );
 }
 
-function BentoCard({
+function CategoryBar({
   label,
-  children,
+  value,
+  color,
 }: {
   label: string;
-  children: React.ReactNode;
+  value: number | null;
+  color: string;
 }) {
+  if (value == null) return null;
+  const pct = Math.min(Math.max(value, 0), 100);
   return (
-    <div className="bg-surface-container border border-white/5 p-6">
-      <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mb-4">
-        {label}
+    <div className="p-4 bg-surface-container border border-white/5">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] text-on-surface-variant uppercase tracking-widest">
+          {label}
+        </span>
+        <span className="text-[11px] font-bold" style={{ color }}>
+          {pct}
+        </span>
       </div>
-      {children}
+      <div className="h-1.5 bg-white/5 w-full">
+        <div
+          className="h-full transition-all"
+          style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.7 }}
+        />
+      </div>
     </div>
   );
 }
 
-function RiskStat({ label, value }: { label: string; value: string }) {
+function DimensionTile({
+  label,
+  score,
+  reason,
+}: {
+  label: string;
+  score: number;
+  reason: string | null;
+}) {
+  const pct = Math.min(Math.max(score, 0), 10);
+  const color =
+    pct >= 7 ? '#00FF9C' : pct >= 4 ? '#facc15' : '#ff716c';
   return (
-    <div>
-      <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mb-2">
-        {label}
+    <div className="p-4 bg-surface-container border border-white/5 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] text-on-surface-variant uppercase tracking-widest">
+          {label}
+        </span>
+        <span className="text-sm font-black" style={{ color }}>
+          {pct}
+          <span className="text-[10px] text-on-surface-variant font-light">/10</span>
+        </span>
       </div>
-      <div className="text-sm font-bold text-on-surface crt-glow">{value}</div>
+      {reason && (
+        <p className="text-[10px] text-on-surface-variant/70 leading-relaxed">
+          {reason}
+        </p>
+      )}
     </div>
   );
 }
-
