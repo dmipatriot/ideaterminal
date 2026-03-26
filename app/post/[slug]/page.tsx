@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPostBySlug, Post, Verdict } from '@/lib/posts';
+import ScoringInfoModal from '@/components/ScoringInfoModal';
 
 /* ── Verdict config ──────────────────────────────────────── */
 const VERDICT_CONFIG: Record<
@@ -33,16 +34,34 @@ const VERDICT_CONFIG: Record<
   },
 };
 
-const DIMENSIONS = [
-  { key: 'market_pull', label: 'MARKET_PULL' },
-  { key: 'timing', label: 'TIMING' },
-  { key: 'differentiation', label: 'DIFFERENTIATION' },
-  { key: 'feasibility', label: 'FEASIBILITY' },
-  { key: 'monetization', label: 'MONETIZATION' },
-  { key: 'distribution', label: 'DISTRIBUTION' },
-  { key: 'founder_fit', label: 'FOUNDER_FIT' },
-  { key: 'defensibility', label: 'DEFENSIBILITY' },
-  { key: 'assumption_density', label: 'ASSUMPTION_DENSITY' },
+const DIMENSION_GROUPS = [
+  {
+    category: 'SIGNAL',
+    color: '#00FF9C',
+    dimensions: [
+      { key: 'market_pull', label: 'MARKET_PULL' },
+      { key: 'timing', label: 'TIMING' },
+      { key: 'differentiation', label: 'DIFFERENTIATION' },
+    ],
+  },
+  {
+    category: 'EXECUTION',
+    color: '#60a5fa',
+    dimensions: [
+      { key: 'feasibility', label: 'FEASIBILITY' },
+      { key: 'monetization', label: 'MONETIZATION' },
+      { key: 'distribution', label: 'DISTRIBUTION' },
+    ],
+  },
+  {
+    category: 'RISK',
+    color: '#ff716c',
+    dimensions: [
+      { key: 'founder_fit', label: 'FOUNDER_FIT' },
+      { key: 'defensibility', label: 'DEFENSIBILITY' },
+      { key: 'assumption_density', label: 'ASSUMPTION_DENSITY' },
+    ],
+  },
 ] as const;
 
 export default async function PostPage({
@@ -137,7 +156,7 @@ export default async function PostPage({
       </Section>
 
       {/* ── AI_ANALYSIS_ENGINE_V4 ─────────────────────────── */}
-      <Section label="AI_ANALYSIS_ENGINE_V4">
+      <Section label="AI_ANALYSIS_ENGINE_V4" right={<ScoringInfoModal />}>
         {/* 1. Composite score + verdict badge */}
         <div className="flex items-center gap-6 mb-6 p-6 bg-surface-container border border-white/5">
           <div className="flex-shrink-0">
@@ -172,28 +191,31 @@ export default async function PostPage({
           </div>
         )}
 
-        {/* 3. 3x3 dimension grid */}
-        {DIMENSIONS.some(
-          (d) => post[d.key as keyof Post] != null
-        ) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-            {DIMENSIONS.map(({ key, label }) => {
+        {/* 3. Grouped dimension grid — 3 columns matching bars above */}
+        <div className="grid grid-cols-3 gap-x-3">
+          {/* Category headers */}
+          {DIMENSION_GROUPS.map(({ category, color }) => (
+            <div
+              key={category}
+              className="text-[9px] font-bold uppercase tracking-widest mb-2 pl-1"
+              style={{ color }}
+            >
+              {category}
+            </div>
+          ))}
+          {/* Dimension tiles — each column stacks vertically */}
+          {Array.from({ length: 3 }).map((_, rowIdx) =>
+            DIMENSION_GROUPS.map(({ dimensions }) => {
+              const { key, label } = dimensions[rowIdx];
               const val = post[key as keyof Post] as number | null;
-              const reason = post[
-                (`${key}_reason`) as keyof Post
-              ] as string | null;
-              if (val == null) return null;
+              const reason = post[`${key}_reason` as keyof Post] as string | null;
+              if (val == null) return <div key={key} />;
               return (
-                <DimensionTile
-                  key={key}
-                  label={label}
-                  score={val}
-                  reason={reason}
-                />
+                <DimensionTile key={key} label={label} score={val} reason={reason} />
               );
-            })}
-          </div>
-        )}
+            })
+          )}
+        </div>
       </Section>
 
       {/* ── KILL_SHOT ─────────────────────────────────────── */}

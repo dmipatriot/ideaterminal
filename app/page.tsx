@@ -3,12 +3,6 @@ import { getAllPublishedPosts, Post, Verdict } from '@/lib/posts';
 
 export const dynamic = 'force-dynamic';
 
-const STATS = [
-  { label: 'THOUGHT_VELOCITY', value: '4.2/hr' },
-  { label: 'NEURAL_LOAD', value: '78.3%' },
-  { label: 'ACTIVE_NODES', value: '1,024' },
-  { label: 'UPTIME_STREAK', value: '99.99%' },
-];
 
 function verdictChipClass(verdict: Verdict): string {
   switch (verdict) {
@@ -66,13 +60,31 @@ function truncateId(id: string): string {
 export default async function Home() {
   const posts = await getAllPublishedPosts();
 
+  const count = posts.length;
+  const avgScore = count > 0
+    ? posts.reduce((s, p) => s + p.score, 0) / count
+    : null;
+  const riskyCount = posts.filter((p) => p.verdict === 'RISKY').length;
+  const riskyRate = count > 0 ? (riskyCount / count) * 100 : null;
+  const signalPosts = posts.filter((p) => p.signal_score != null);
+  const avgSignal = signalPosts.length > 0
+    ? signalPosts.reduce((s, p) => s + (p.signal_score ?? 0), 0) / signalPosts.length
+    : null;
+
+  const stats = [
+    { label: 'IDEAS_ARCHIVED', value: count.toString() },
+    { label: 'AVG_SCORE', value: avgScore != null ? avgScore.toFixed(1) : '--' },
+    { label: 'RISKY_RATE', value: riskyRate != null ? riskyRate.toFixed(1) + '%' : '--' },
+    { label: 'AVG_SIGNAL', value: avgSignal != null ? avgSignal.toFixed(1) : '--' },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <div className="px-4 md:px-8 py-8 max-w-4xl mx-auto">
 
         {/* System Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-10">
-          {STATS.map((stat) => (
+          {stats.map((stat) => (
             <div
               key={stat.label}
               className="border border-primary-container/20 bg-surface p-3"
