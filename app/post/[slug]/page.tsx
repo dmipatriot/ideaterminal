@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPostBySlug, Post, Verdict } from '@/lib/posts';
 import ScoringInfoModal from '@/components/ScoringInfoModal';
+import BuildV1Modal from '@/components/BuildV1Modal';
 
 /* ── Verdict config ──────────────────────────────────────── */
 const VERDICT_CONFIG: Record<
@@ -337,10 +338,7 @@ export default async function PostPage({
 
       {/* ── Action buttons ───────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <button className="h-16 flex-1 bg-primary text-black font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-colors">
-          <span className="material-symbols-outlined text-base">bolt</span>
-          [ RUN BUILD_V1 ]
-        </button>
+        <BuildV1Modal prompt={post.claude_code_prompt} />
         <button className="h-16 flex-1 border border-primary/30 text-primary font-bold uppercase tracking-widest text-sm hover:bg-primary/5 transition-colors">
           REQUEST_SEED_FUNDING
         </button>

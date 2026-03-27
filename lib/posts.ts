@@ -68,6 +68,8 @@ export interface Post {
   published_at: string | null;
 
   metadata: Record<string, unknown>;
+
+  claude_code_prompt: string | null;
 }
 
 export async function getAllPublishedPosts(): Promise<Post[]> {
