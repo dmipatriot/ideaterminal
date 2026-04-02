@@ -74,8 +74,8 @@ async function fetchDimensionAverages(): Promise<DimensionAverage[]> {
 
   return DIMENSIONS.map(({ key, label }) => {
     const vals = (data ?? [])
-      .map((r) => (r as Record<string, unknown>)[key])
-      .filter((v): v is number => typeof v === 'number' && v !== null);
+      .map((r) => (r as unknown as Record<string, unknown>)[key])
+      .filter((v): v is number => typeof v === 'number');
     const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     return { key, label, avg: Math.round(avg * 10) / 10 };
   }).sort((a, b) => b.avg - a.avg);
