@@ -1,24 +1,10 @@
 import Link from 'next/link';
 import { getAllPublishedPosts } from '@/lib/posts';
+import { getArchiveStats } from '@/lib/getArchiveStats';
 import ArchiveRow from './ArchiveRow';
+import ArchiveStatsPanels from '@/components/ArchiveStatsPanels';
 
 const PAGE_SIZE = 20;
-
-const SECTOR_HEALTH = [
-  { label: 'IDEATION', pct: 87 },
-  { label: 'VALIDATION', pct: 63 },
-  { label: 'EXECUTION', pct: 41 },
-  { label: 'SCALING', pct: 29 },
-];
-
-const SYSTEM_LOGS = [
-  '> ARCHIVE_DAEMON v4.1 ACTIVE',
-  '> LAST_SYNC: 00:00:14 AGO',
-  '> INTEGRITY_CHECK: PASS',
-  '> INDEX_REBUILT: 1,024 NODES',
-  '> ANOMALIES_DETECTED: 0',
-  '> AWAITING_NEXT_FLUSH...',
-];
 
 export default async function ArchivePage({
   searchParams,
@@ -26,7 +12,7 @@ export default async function ArchivePage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const { page: pageParam } = await searchParams;
-  const allPosts = await getAllPublishedPosts();
+  const [allPosts, stats] = await Promise.all([getAllPublishedPosts(), getArchiveStats()]);
   const total = allPosts.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const page = Math.min(Math.max(1, Number(pageParam ?? 1) || 1), totalPages);
@@ -147,69 +133,7 @@ export default async function ArchivePage({
       </div>
 
       {/* ── Visualization module ────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        {/* SECTOR_HEALTH */}
-        <div className="border border-[#00FF9C]/10 bg-surface-container-lowest p-5">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">
-              SECTOR_HEALTH
-            </span>
-          </div>
-          <div className="space-y-3">
-            {SECTOR_HEALTH.map((s) => (
-              <div key={s.label}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-[9px] text-on-surface-variant uppercase tracking-widest">
-                    {s.label}
-                  </span>
-                  <span className="text-[9px] text-primary font-bold">{s.pct}%</span>
-                </div>
-                <div className="h-1 bg-white/5">
-                  <div
-                    className="h-full bg-primary/60 transition-all"
-                    style={{ width: `${s.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* DATA_INTEGRITY */}
-        <div className="border border-[#00FF9C]/10 bg-surface-container-lowest p-5 flex flex-col items-center justify-center">
-          <div className="text-[10px] text-on-surface-variant uppercase tracking-widest mb-4">
-            DATA_INTEGRITY
-          </div>
-          <div className="text-6xl font-black text-primary crt-glow mb-2">
-            {total > 0 ? '99%' : '—'}
-          </div>
-          <div className="text-[9px] text-on-surface-variant/60 uppercase tracking-widest text-center">
-            {total} RECORDS VERIFIED
-            <br />
-            0 CORRUPTIONS DETECTED
-          </div>
-        </div>
-
-        {/* SYSTEM_LOGS */}
-        <div className="border border-[#00FF9C]/10 bg-black p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-            <span className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">
-              SYSTEM_LOGS
-            </span>
-          </div>
-          <div className="space-y-1.5 font-mono">
-            {SYSTEM_LOGS.map((line, i) => (
-              <div key={i} className="text-[10px] text-primary/50 leading-tight">
-                {line}
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
+      <ArchiveStatsPanels stats={stats} />
     </div>
   );
 }
