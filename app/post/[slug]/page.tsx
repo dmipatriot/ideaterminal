@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getPostBySlug, Post, Verdict } from '@/lib/posts';
 import ScoringInfoModal from '@/components/ScoringInfoModal';
 import BuildV1Modal from '@/components/BuildV1Modal';
+import BusinessTypeBadge from '@/components/BusinessTypeBadge';
 
 /* ── Verdict config ──────────────────────────────────────── */
 const VERDICT_CONFIG: Record<
@@ -108,6 +109,12 @@ export default async function PostPage({
         <h1 className="text-4xl font-black text-primary tracking-tighter leading-none uppercase mb-6 crt-glow">
           {post.title.toUpperCase()}
         </h1>
+
+        {post.business_type && (
+          <div className="mb-3">
+            <BusinessTypeBadge type={post.business_type} />
+          </div>
+        )}
 
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">

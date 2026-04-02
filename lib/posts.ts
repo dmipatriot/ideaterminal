@@ -70,6 +70,8 @@ export interface Post {
   metadata: Record<string, unknown>;
 
   claude_code_prompt: string | null;
+
+  business_type: 'tech' | 'local' | 'content' | 'other' | null;
 }
 
 export async function getAllPublishedPosts(): Promise<Post[]> {

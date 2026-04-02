@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Post, Verdict } from '@/lib/posts';
+import BusinessTypeBadge from '@/components/BusinessTypeBadge';
 
 function verdictLabel(verdict: Verdict): { text: string; className: string } {
   switch (verdict) {
@@ -58,7 +59,10 @@ export default function ArchiveRow({ post }: { post: Post }) {
         {formatTs(post.created_at)}
       </td>
       <td className={`px-4 py-3 text-[11px] font-bold whitespace-nowrap ${verdict.className}`}>
-        {verdict.text}
+        <div className="flex flex-col items-start gap-1">
+          <span>{verdict.text}</span>
+          <BusinessTypeBadge type={post.business_type} size="sm" />
+        </div>
       </td>
     </tr>
   );
