@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPostBySlug, Post, Verdict } from '@/lib/posts';
+import { getForksByPostId } from '@/lib/forks';
 import ScoringInfoModal from '@/components/ScoringInfoModal';
 import BuildV1Modal from '@/components/BuildV1Modal';
+import ForkButton from '@/components/ForkButton';
+import ForkSidebar from '@/components/ForkSidebar';
 import BusinessTypeBadge from '@/components/BusinessTypeBadge';
 import TechStackIcon from '@/components/TechStackIcon';
+
+export const dynamic = 'force-dynamic';
 
 /* ── Verdict config ──────────────────────────────────────── */
 const VERDICT_CONFIG: Record<
@@ -77,6 +82,8 @@ export default async function PostPage({
 
   if (!post) notFound();
 
+  const forks = await getForksByPostId(post.id);
+
   const tags: string[] = Array.isArray(post.tags)
     ? post.tags
     : typeof post.tags === 'string'
@@ -92,7 +99,10 @@ export default async function PostPage({
   const verdict = VERDICT_CONFIG[post.verdict] ?? VERDICT_CONFIG.PASS;
 
   return (
-    <div className="min-h-screen bg-background px-4 md:px-8 py-10 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <div className="flex flex-col lg:flex-row max-w-[1200px] mx-auto">
+        {/* Main content */}
+        <main className="flex-1 min-w-0 px-4 md:px-8 py-10 max-w-4xl">
       {/* Back link */}
       <Link
         href="/archive"
@@ -336,14 +346,18 @@ export default async function PostPage({
       {/* ── Action buttons ───────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <BuildV1Modal prompt={post.claude_code_prompt} />
-        <button className="h-16 flex-1 border border-primary/30 text-primary font-bold uppercase tracking-widest text-sm hover:bg-primary/5 transition-colors">
-          REQUEST_SEED_FUNDING
-        </button>
+        <ForkButton parentPostId={post.id} />
       </div>
       <div className="text-center">
         <button className="text-[11px] text-error/40 hover:text-error uppercase tracking-widest transition-colors">
           -- abort_sequence --
         </button>
+      </div>
+
+        </main>
+
+        {/* Fork sidebar — handles both desktop (sticky aside) and mobile (collapsible section) */}
+        <ForkSidebar forks={forks} parentPostId={post.id} postSlug={slug} />
       </div>
     </div>
   );
