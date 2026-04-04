@@ -4,6 +4,7 @@ import { getPostBySlug, Post, Verdict } from '@/lib/posts';
 import ScoringInfoModal from '@/components/ScoringInfoModal';
 import BuildV1Modal from '@/components/BuildV1Modal';
 import BusinessTypeBadge from '@/components/BusinessTypeBadge';
+import TechStackIcon from '@/components/TechStackIcon';
 
 /* ── Verdict config ──────────────────────────────────────── */
 const VERDICT_CONFIG: Record<
@@ -84,6 +85,8 @@ export default async function PostPage({
 
   const techStack: string[] = Array.isArray(post.tech_stack)
     ? post.tech_stack
+    : typeof post.tech_stack === 'string'
+    ? (() => { try { return JSON.parse(post.tech_stack as string); } catch { return []; } })()
     : [];
 
   const verdict = VERDICT_CONFIG[post.verdict] ?? VERDICT_CONFIG.PASS;
@@ -314,21 +317,8 @@ export default async function PostPage({
       {techStack.length > 0 && (
         <Section label="TECH_STACK">
           <div className="flex flex-wrap gap-4">
-            {techStack.map((slug) => (
-              <div key={slug} className="flex flex-col items-center gap-2">
-                <div className="w-10 h-10 bg-surface-container border border-white/10 flex items-center justify-center p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://cdn.simpleicons.org/${slug}`}
-                    alt={slug}
-                    className="w-6 h-6 object-contain"
-                    style={{ filter: 'brightness(0) invert(1) opacity(0.7)' }}
-                  />
-                </div>
-                <span className="text-[9px] text-on-surface-variant uppercase tracking-widest">
-                  {slug}
-                </span>
-              </div>
+            {techStack.map((name) => (
+              <TechStackIcon key={name} name={name} />
             ))}
           </div>
         </Section>
