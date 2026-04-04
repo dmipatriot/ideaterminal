@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   isOpen: boolean;
@@ -14,7 +14,7 @@ interface FormData {
   author_note: string;
   suggested_tags: string;
   suggested_tech_stack: string;
-  website: string; // honeypot
+  contact_url: string; // honeypot
 }
 
 interface FieldErrors {
@@ -87,12 +87,11 @@ export default function ForkModal({ isOpen, onClose, parentPostId, onSuccess }: 
     author_note: '',
     suggested_tags: '',
     suggested_tech_stack: '',
-    website: '',
+    contact_url: '',
   });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [optionalExpanded, setOptionalExpanded] = useState(false);
-  const honeypotRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -106,7 +105,7 @@ export default function ForkModal({ isOpen, onClose, parentPostId, onSuccess }: 
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      setForm({ fork_name: '', author_note: '', suggested_tags: '', suggested_tech_stack: '', website: '' });
+      setForm({ fork_name: '', author_note: '', suggested_tags: '', suggested_tech_stack: '', contact_url: '' });
       setErrors({});
       setOptionalExpanded(false);
     }
@@ -150,7 +149,7 @@ export default function ForkModal({ isOpen, onClose, parentPostId, onSuccess }: 
           author_note: form.author_note,
           suggested_tags: tagsArray.length > 0 ? tagsArray : null,
           suggested_tech_stack: stackArray.length > 0 ? stackArray : null,
-          website: form.website, // honeypot — server ignores if filled
+          contact_url: form.contact_url, // honeypot — server ignores if filled
         }),
       });
 
@@ -214,10 +213,9 @@ export default function ForkModal({ isOpen, onClose, parentPostId, onSuccess }: 
           {/* Honeypot — visually hidden, not display:none so bots fill it */}
           <div style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
             <input
-              ref={honeypotRef}
               type="text"
-              name="website"
-              value={form.website}
+              name="contact_url"
+              value={form.contact_url}
               onChange={handleChange}
               tabIndex={-1}
               autoComplete="off"

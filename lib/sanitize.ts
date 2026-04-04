@@ -21,16 +21,17 @@ export function sanitizeForkName(input: string): string | null {
 /**
  * Validate an array of tag/stack strings.
  * Each item must be lowercase alphanumeric + hyphens, max 40 chars.
- * Returns null if input is not an array.
- * Filters out invalid items; returns null if array is empty after filtering.
+ * Returns null if input is not an array, if the array is empty,
+ * or if ANY item fails validation (strict — no silent drops).
  */
 export function sanitizeTagArray(input: unknown): string[] | null {
   if (!Array.isArray(input)) return null;
-  const valid = input.filter(
+  if (input.length === 0) return null;
+  const allValid = input.every(
     (item): item is string =>
       typeof item === 'string' &&
       item.length <= 40 &&
       TAG_ITEM_RE.test(item)
   );
-  return valid.length > 0 ? valid : null;
+  return allValid ? (input as string[]) : null;
 }

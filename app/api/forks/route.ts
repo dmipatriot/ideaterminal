@@ -13,13 +13,13 @@ export async function POST(request: Request) {
   }
 
   // Honeypot check — bots fill it, humans don't
-  if (body.website || body.url) {
+  if (body.contact_url || body.url) {
     return Response.json({ ok: true }, { status: 200 });
   }
 
-  // Rate limiting by IP
+  // Rate limiting by IP — prefer Vercel's trusted edge header (cannot be spoofed by callers)
   const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+    request.headers.get('x-vercel-forwarded-for') ??
     request.headers.get('x-real-ip') ??
     'unknown';
 
