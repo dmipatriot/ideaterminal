@@ -100,3 +100,14 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   }
   return data as Post;
 }
+
+export async function getSitemapPosts(): Promise<{ slug: string; published_at: string | null }[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('slug, published_at')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false, nullsFirst: false });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as { slug: string; published_at: string | null }[];
+}

@@ -1,7 +1,29 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllPublishedPosts, Post, Verdict } from '@/lib/posts';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'IdeaTerminal',
+  description: 'AI brainstorming sessions scored and archived. Every idea stress-tested across market pull, execution risk, and timing.',
+  alternates: {
+    canonical: 'https://ideaterminal.vercel.app',
+  },
+  openGraph: {
+    title: 'IdeaTerminal',
+    description: 'AI brainstorming sessions scored and archived. Every idea stress-tested across market pull, execution risk, and timing.',
+    url: 'https://ideaterminal.vercel.app',
+    type: 'website',
+    images: [{ url: '/og-default.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'IdeaTerminal',
+    description: 'AI brainstorming sessions scored and archived. Every idea stress-tested across market pull, execution risk, and timing.',
+    images: ['/og-default.png'],
+  },
+};
 
 
 function verdictChipClass(verdict: Verdict): string {

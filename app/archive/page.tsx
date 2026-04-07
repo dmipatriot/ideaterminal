@@ -1,8 +1,30 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllPublishedPosts } from '@/lib/posts';
 import { getArchiveStats } from '@/lib/getArchiveStats';
 import ArchiveRow from './ArchiveRow';
 import ArchiveStatsPanels from '@/components/ArchiveStatsPanels';
+
+export const metadata: Metadata = {
+  title: 'Archive | IdeaTerminal',
+  description: 'Every idea scored and filed. Browse the full archive of AI-evaluated concepts sorted by verdict and score.',
+  alternates: {
+    canonical: 'https://ideaterminal.vercel.app/archive',
+  },
+  openGraph: {
+    title: 'Archive | IdeaTerminal',
+    description: 'Every idea scored and filed. Browse the full archive of AI-evaluated concepts sorted by verdict and score.',
+    url: 'https://ideaterminal.vercel.app/archive',
+    type: 'website',
+    images: [{ url: '/og-default.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Archive | IdeaTerminal',
+    description: 'Every idea scored and filed. Browse the full archive of AI-evaluated concepts sorted by verdict and score.',
+    images: ['/og-default.png'],
+  },
+};
 
 const PAGE_SIZE = 20;
 

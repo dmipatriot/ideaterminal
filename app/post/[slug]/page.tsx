@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPostBySlug, Post, Verdict } from '@/lib/posts';
@@ -10,6 +11,46 @@ import BusinessTypeBadge from '@/components/BusinessTypeBadge';
 import TechStackIcon from '@/components/TechStackIcon';
 
 export const dynamic = 'force-dynamic';
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+
+  if (!post) return { title: 'Not Found | IdeaTerminal' };
+
+  const description = post.clean_summary
+    ? post.clean_summary.slice(0, 155).trimEnd()
+    : undefined;
+
+  const images = post.image_url
+    ? [{ url: post.image_url, width: 1536, height: 1024, alt: post.title }]
+    : [];
+
+  return {
+    title: `${post.title} | IdeaTerminal`,
+    description,
+    alternates: {
+      canonical: `https://ideaterminal.vercel.app/post/${post.slug}`,
+    },
+    openGraph: {
+      title: post.title,
+      description,
+      url: `https://ideaterminal.vercel.app/post/${post.slug}`,
+      type: 'article',
+      ...(post.published_at && { publishedTime: post.published_at }),
+      tags: post.tags,
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description,
+      images: post.image_url ? [post.image_url] : [],
+    },
+  };
+}
 
 /* ── Verdict config ──────────────────────────────────────── */
 const VERDICT_CONFIG: Record<
@@ -98,8 +139,28 @@ export default async function PostPage({
 
   const verdict = VERDICT_CONFIG[post.verdict] ?? VERDICT_CONFIG.PASS;
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.clean_summary ?? undefined,
+    image: post.image_url ?? undefined,
+    datePublished: post.published_at ?? undefined,
+    keywords: tags.join(', '),
+    author: { '@type': 'Organization', name: 'IdeaTerminal' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'IdeaTerminal',
+      url: 'https://ideaterminal.vercel.app',
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="flex flex-col lg:flex-row max-w-[1200px] mx-auto">
         {/* Main content */}
         <main className="flex-1 min-w-0 px-4 md:px-8 py-10 max-w-4xl">
