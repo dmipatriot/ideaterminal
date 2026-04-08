@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Fork } from '@/lib/forks';
 import ForkModal from './ForkModal';
@@ -123,7 +123,23 @@ export default function ForkSidebar({ forks, parentPostId, postSlug }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileDetailRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!selectedFork || !mobileDetailRef.current) return;
+    const detail = mobileDetailRef.current;
+    const scrollContainer = detail.closest('main') as HTMLElement | null;
+    if (!scrollContainer) return;
+    setTimeout(() => {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const detailRect = detail.getBoundingClientRect();
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollTop + detailRect.top - containerRect.top - 8,
+        behavior: 'smooth',
+      });
+    }, 50);
+  }, [selectedFork]);
 
   function handleSelectFork(fork: Fork) {
     setSelectedFork((prev) => (prev?.id === fork.id ? null : fork));
@@ -198,7 +214,7 @@ export default function ForkSidebar({ forks, parentPostId, postSlug }: Props) {
               onSelectFork={handleSelectFork}
               onAddFork={() => setModalOpen(true)}
             />
-            {selectedFork && <ForkDetail fork={selectedFork} />}
+            {selectedFork && <div ref={mobileDetailRef}><ForkDetail fork={selectedFork} /></div>}
           </div>
         )}
       </div>
